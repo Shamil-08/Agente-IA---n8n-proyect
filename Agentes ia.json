@@ -1,0 +1,261 @@
+{
+  "name": "Agentes ia",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Resume este correo basándote en la información disponible:\n\nAsunto:{{ $json.subject }}\nCuerpo:{{ $json.text }}\n\nProporciona un resumen breve en 2 líneas con la información que tengas disponible.",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -512,
+        -544
+      ],
+      "id": "421b5e27-75af-4293-8fa9-ca72ed2252a0",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -512,
+        -352
+      ],
+      "id": "acf36183-27e3-4294-a0e6-3be28638a1a3",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "zyq89I9Fe4DXL0AW",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "custom",
+              "cronExpression": "*/5 * * * *"
+            }
+          ]
+        },
+        "simple": false,
+        "filters": {},
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -688,
+        -544
+      ],
+      "id": "a4742c72-4211-4190-9de3-c497297199e8",
+      "name": "Gmail Trigger"
+    },
+    {
+      "parameters": {
+        "chatId": "=6354477910",
+        "text": "={{ $json.output }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -192,
+        -544
+      ],
+      "id": "940b7bfc-4a5a-4fa4-a152-3b467bb2b6cc",
+      "name": "Send a text message",
+      "webhookId": "fb314f34-e757-45e4-8408-851490d03c79"
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -672,
+        -176
+      ],
+      "id": "d18f660d-2471-40e0-b3e8-c9e7cf2818d1",
+      "name": "Telegram Trigger",
+      "webhookId": "46c63f80-df3c-4cbc-89b9-77c4ddd2e3d6",
+      "credentials": {
+        "telegramApi": {
+          "id": "QiQ9uYEdFVVFZrcg",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.message.chat.id }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -384,
+        96
+      ],
+      "id": "e577f5c0-1190-4e2d-a54c-e8ad5efd4e55",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -496,
+        16
+      ],
+      "id": "e599da80-ae47-4181-85ef-7d2df19380bc",
+      "name": "Google Gemini Chat Model1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message.text }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -496,
+        -176
+      ],
+      "id": "679b791e-dd30-45ec-84c3-e8f86211f511",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -144,
+        0
+      ],
+      "id": "745a4b4f-4c7c-49f3-9172-6349ff4b4cce",
+      "name": "Send a text message1",
+      "webhookId": "a7d96ecd-fa93-4ad7-b394-5a625d77f580",
+      "credentials": {
+        "telegramApi": {
+          "id": "QiQ9uYEdFVVFZrcg",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message": {
+      "main": [
+        []
+      ]
+    },
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Send a text message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "d92fe9cc-36cc-4482-838a-03d6499b14a0",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "62ca535840d1e7bd497b334a25411d03540d212fa5719ceec0abe28a41d99a1c"
+  },
+  "id": "ft8BLzKdiDn8CTRl",
+  "tags": []
+}
